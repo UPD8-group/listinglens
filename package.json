@@ -1,0 +1,10 @@
+{
+  "name": "listinglens-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Listing Lens — AI Buyer Intelligence",
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Report — Listing Lens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Clerk -->
+<script async crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_REPLACE_ME"
+  src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"></script>
+
+<style>
+:root {
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;
+  --surf:#f1f5f9;--surfW:#fef3c7;
+  --bdr:#e2e8f0;--bdrS:#cbd5e1;
+  --wh:#fff;
+  --red:#dc2626;--redBg:#fef2f2;--redBdr:#fecaca;
+  --amb:#d97706;--ambBg:#fffbeb;--ambBdr:#fde68a;
+  --grn:#16a34a;--grnBg:#f0fdf4;--grnBdr:#bbf7d0;
+  --em:#10b981;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'DM Sans',-apple-system,sans-serif;
+  --display:'Plus Jakarta Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);background:var(--surf);color:var(--ink);line-height:1.6}
+
+/* Loading */
+#report-loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.spinner{width:36px;height:36px;border:3px solid var(--bdr);border-top-color:var(--em);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:var(--mono);font-size:12px;color:var(--ink3);letter-spacing:0.05em}
+.loading-sub{font-size:13px;color:var(--bdrS)}
+#report-loading.hidden{display:none}
+
+/* Error */
+#report-error{display:none;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:40px}
+#report-error.show{display:flex;flex-direction:column;gap:12px}
+.error-icon{font-size:48px}
+.error-title{font-family:var(--display);font-size:20px;font-weight:700}
+.error-desc{font-size:14px;color:var(--ink3);max-width:400px}
+.error-btn{font-family:var(--display);font-size:14px;font-weight:700;background:var(--em);color:#fff;border:none;padding:12px 24px;border-radius:10px;cursor:pointer;margin-top:8px}
+
+/* Report container */
+#report-content{display:none;max-width:680px;margin:0 auto;padding:24px 16px 60px}
+#report-content.show{display:block}
+
+/* Back bar */
+.back-bar{margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.back-btn{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--em);background:none;border:none;cursor:pointer;padding:0}
+.back-btn:hover{text-decoration:underline}
+.report-actions{display:flex;gap:8px}
+.action-btn{font-family:var(--sans);font-size:12px;font-weight:600;padding:6px 14px;border-radius:8px;border:1px solid var(--bdr);background:#fff;color:var(--ink2);cursor:pointer}
+.action-btn:hover{background:var(--surf)}
+
+/* Masthead */
+.mast{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+.mast-brand{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase}
+.mast-meta{font-family:var(--mono);font-size:10px;color:var(--ink3);text-align:right;line-height:1.6}
+
+/* Headline */
+.headline{margin-bottom:24px}
+.headline h1{font-family:var(--display);font-size:22px;font-weight:800;line-height:1.3;margin-bottom:8px;letter-spacing:-0.3px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--mono);font-size:10.5px;padding:3px 8px;border-radius:4px;background:var(--surf);border:1px solid var(--bdr);color:var(--ink2)}
+
+/* Score */
+.score-hero{background:var(--ink);color:#fff;border-radius:12px;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:24px}
+.score-ring{position:relative;width:110px;height:110px;flex-shrink:0}
+.score-svg{transform:rotate(-90deg);width:100%;height:100%}
+.score-bg{fill:none;stroke:#334155;stroke-width:8}
+.score-fill{fill:none;stroke:var(--em);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.2s ease-out}
+.score-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:32px;font-weight:700}
+.score-verdict{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:4px}
+.score-desc{font-size:12.5px;color:#94a3b8;line-height:1.5}
+
+.dims{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px}
+.dim{background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:10px 6px;text-align:center}
+.dim-val{font-family:var(--mono);font-size:18px;font-weight:700}
+.dim-label{font-size:9.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px}
+
+/* Sections */
+.sec{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:20px;margin-bottom:12px}
+.sec-label{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+
+/* Flags */
+.flag{padding:12px;border-radius:8px;margin-bottom:8px;border-left:4px solid}
+.flag:last-child{margin-bottom:0}
+.flag--red{background:var(--redBg);border-color:var(--red)}
+.flag--amber{background:var(--ambBg);border-color:var(--amb)}
+.flag--green{background:var(--grnBg);border-color:var(--grn)}
+.flag-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.flag--red .flag-title{color:var(--red)}
+.flag--amber .flag-title{color:var(--amb)}
+.flag--green .flag-title{color:var(--grn)}
+.flag-detail{font-size:12.5px;color:var(--ink2);line-height:1.6}
+
+/* Negotiation */
+.neg-card{background:var(--ink);color:#fff;border-radius:10px;padding:20px;margin-bottom:12px}
+.neg-card .sec-label{color:#64748b}
+.neg-range{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.neg-price{font-family:var(--mono);font-size:24px;font-weight:700}
+.neg-dash{font-size:20px;color:#475569}
+.neg-note{font-size:12.5px;color:#94a3b8;line-height:1.6}
+
+/* Total card */
+.total-card{border-radius:10px;padding:20px;margin-bottom:12px;text-align:center}
+.total-card--amber{background:var(--ambBg);border:1px solid var(--ambBdr)}
+.total-card--red{background:var(--redBg);border:1px solid var(--redBdr)}
+.total-label{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.total-card--amber .total-label{color:var(--amb)}
+.total-card--red .total-label{color:var(--red)}
+.total-amount{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.total-note{font-size:12px;color:var(--ink2);line-height:1.6}
+
+/* Questions */
+.q-item{padding:10px 0;border-bottom:1px solid var(--surf)}
+.q-item:last-child{border-bottom:none}
+.q-cat{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--em);margin-bottom:3px}
+.q-text{font-size:12.5px;color:var(--ink2);line-height:1.6}
+
+/* Stamp */
+.stamp{text-align:center;margin-top:32px;padding-top:16px;border-top:2px solid var(--ink)}
+.stamp-logo{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:3px}
+.stamp-sub{font-family:var(--mono);font-size:9px;color:var(--ink3)}
+
+@media(max-width:480px){
+  .dims{gap:4px}
+  .dim{padding:8px 4px}
+  .dim-val{font-size:15px}
+  .neg-price{font-size:20px}
+  .score-hero{flex-direction:column;text-align:center}
+  .total-amount{font-size:22px}
+}
+
+/* Print styles */
+@media print{
+  .back-bar,.report-actions{display:none!important}
+  body{background:#fff}
+  .score-hero{break-inside:avoid}
+  .sec{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="report-loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Generating your report...</div>
+  <div class="loading-sub" id="loading-status">Fetching listing data</div>
+</div>
+
+<!-- Error -->
+<div id="report-error">
+  <div class="error-icon">⚠️</div>
+  <div class="error-title" id="error-title">Report generation failed</div>
+  <div class="error-desc" id="error-desc">Something went wrong. Please try again.</div>
+  <button class="error-btn" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+</div>
+
+<!-- Report -->
+<div id="report-content">
+  <!-- Populated by JS -->
+</div>
+
+<script>
+const CIRC = 2 * Math.PI * 45;
+
+// ── Parse URL params ──────────────────────
+const params = new URLSearchParams(window.location.search);
+const listingUrl = params.get("url");
+const reportId = params.get("id");
+const inputText = params.get("text");
+
+// ── Render report from JSON ───────────────
+function renderReport(r) {
+  const offset = CIRC - (r.score / 100) * CIRC;
+
+  const flagsHtml = (r.flags || []).map(f => `
+    <div class="flag flag--${f.t}">
+      <div class="flag-title">${esc(f.h)}</div>
+      <div class="flag-detail">${esc(f.d)}</div>
+    </div>
+  `).join("");
+
+  const questionsHtml = (r.questions || []).map(q => `
+    <div class="q-item">
+      <div class="q-cat">${esc(q.c)}</div>
+      <div class="q-text">${esc(q.q)}</div>
+    </div>
+  `).join("");
+
+  const tagsHtml = (r.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+
+  const dimsHtml = (r.dims || []).map(d => `
+    <div class="dim">
+      <div class="dim-val">${d.v}</div>
+      <div class="dim-label">${esc(d.l)}</div>
+    </div>
+  `).join("");
+
+  const totalClass = r.total?.isRed ? "total-card--red" : "total-card--amber";
+
+  document.getElementById("report-content").innerHTML = `
+    <div class="back-bar">
+      <button class="back-btn" onclick="window.location.href='/dashboard'">← DASHBOARD</button>
+      <div class="report-actions">
+        <button class="action-btn" onclick="window.print()">🖨️ Print / PDF</button>
+        <button class="action-btn" onclick="shareReport()">📤 Share</button>
+      </div>
+    </div>
+
+    <div class="mast">
+      <div class="mast-brand">Listing Lens</div>
+      <div class="mast-meta">
+        Report #${esc(r.reportNum || "")} · ${esc(r.date || "")}<br>
+        Source: ${esc(r.source || "unknown")}
+      </div>
+    </div>
+
+    <div class="headline">
+      <h1>${esc(r.title || "Listing Report")}</h1>
+      <div class="tags">${tagsHtml}</div>
+    </div>
+
+    <div class="score-hero">
+      <div class="score-ring">
+        <svg class="score-svg" viewBox="0 0 100 100">
+          <circle class="score-bg" cx="50" cy="50" r="45"/>
+          <circle class="score-fill" cx="50" cy="50" r="45"
+            stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="score-num">${r.score || 0}</div>
+      </div>
+      <div>
+        <div class="score-verdict" style="color:${r.verdictColor || '#10b981'}">${esc(r.verdict || "")}</div>
+        <div class="score-desc">${esc(r.verdictDesc || "")}</div>
+      </div>
+    </div>
+
+    <div class="dims">${dimsHtml}</div>
+
+    <div class="sec">
+      <div class="sec-label">Findings</div>
+      ${flagsHtml}
+    </div>
+
+    ${r.neg ? `
+    <div class="neg-card">
+      <div class="sec-label" style="color:#64748b">Negotiation Anchor</div>
+      <div class="neg-range">
+        <div class="neg-price" style="color:#10b981">${esc(r.neg.low)}</div>
+        <div class="neg-dash">—</div>
+        <div class="neg-price">${esc(r.neg.high)}</div>
+      </div>
+      <div class="neg-note">${esc(r.neg.note)}</div>
+    </div>` : ""}
+
+    ${r.total ? `
+    <div class="total-card ${totalClass}">
+      <div class="total-label">${esc(r.total.label)}</div>
+      <div class="total-amount">${esc(r.total.amount)}</div>
+      <div class="total-note">${esc(r.total.note)}</div>
+    </div>` : ""}
+
+    <div class="sec">
+      <div class="sec-label">Questions to Ask</div>
+      ${questionsHtml}
+    </div>
+
+    <div class="stamp">
+      <div class="stamp-logo">Listing Lens</div>
+      <div class="stamp-sub">Buyer intelligence — not an appraisal · Any listing. Any language. Anywhere. · listinglens.app</div>
+    </div>
+  `;
+
+  // Update page title
+  document.title = `${r.title || "Report"} — Listing Lens`;
+}
+
+// ── Escape HTML ───────────────────────────
+function esc(str) {
+  if (!str) return "";
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ── Share ──────────────────────────────────
+function shareReport() {
+  if (navigator.share) {
+    navigator.share({
+      title: document.title,
+      url: window.location.href,
+    });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Link copied to clipboard");
+  }
+}
+
+// ── Loading status animation ──────────────
+const loadingSteps = [
+  "Fetching listing data",
+  "Analysing price and market",
+  "Checking for red flags",
+  "Building negotiation strategy",
+  "Generating your report"
+];
+let stepIndex = 0;
+const stepInterval = setInterval(() => {
+  stepIndex = (stepIndex + 1) % loadingSteps.length;
+  const el = document.getElementById("loading-status");
+  if (el) el.textContent = loadingSteps[stepIndex];
+}, 2500);
+
+// ── Show error ────────────────────────────
+function showError(title, desc) {
+  clearInterval(stepInterval);
+  document.getElementById("report-loading").classList.add("hidden");
+  document.getElementById("error-title").textContent = title || "Report generation failed";
+  document.getElementById("error-desc").textContent = desc || "Please try again.";
+  document.getElementById("report-error").classList.add("show");
+}
+
+// ── Show report ───────────────────────────
+function showReport(data) {
+  clearInterval(stepInterval);
+  document.getElementById("report-loading").classList.add("hidden");
+  document.getElementById("report-content").classList.add("show");
+  renderReport(data);
+
+  // Report is stored in Supabase by generate-report function — no client-side caching needed
+}
+
+// ── Main flow ─────────────────────────────
+async function init() {
+  // Check auth
+  try {
+    if (!window.Clerk) {
+      await new Promise((res, rej) => {
+        const c = setInterval(() => { if (window.Clerk) { clearInterval(c); res(); } }, 100);
+        setTimeout(() => { clearInterval(c); rej(); }, 8000);
+      });
+    }
+    await window.Clerk.load();
+    if (!window.Clerk.user) {
+      window.location.href = "/";
+      return;
+    }
+  } catch {
+    window.location.href = "/";
+    return;
+  }
+
+  const userId = window.Clerk.user.id;
+
+  // Load report by ID
+  if (reportId) {
+    try {
+      var res = await fetch("/.netlify/functions/get-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: userId, reportId: reportId }),
+      });
+
+      if (res.ok) {
+        var data = await res.json();
+        if (data.report) {
+          showReport(data.report);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Report load error:", e);
+    }
+    showError("Report not found", "This report could not be loaded. It may have been deleted or you may not have access.");
+    return;
+  }
+
+  // No report ID — redirect to dashboard
+  showError("No report specified", "Please go to your dashboard and select a report or generate a new one.");
+}
+
+init();
+</script>
+</body>
+</html>

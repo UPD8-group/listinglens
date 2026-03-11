@@ -1,0 +1,9 @@
+{
+  "name": "listinglens-functions",
+  "version": "1.0.0",
+  "description": "Listing Lens Netlify Functions",
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

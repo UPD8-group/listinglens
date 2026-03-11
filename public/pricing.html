@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Listing Lens pricing — 2 reports for $1 to start, Pro from $9/mo, pay-as-you-go from $4.99. AI buyer intelligence for any listing.">
+<title>Pricing — Listing Lens</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Clerk -->
+<script async crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_REPLACE_ME"
+  src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  type="text/javascript"></script>
+
+<style>
+:root {
+  --sl950:#0F172A;--sl900:#1E293B;--sl800:#334155;--sl700:#475569;
+  --sl600:#64748B;--sl500:#94A3B8;--sl400:#CBD5E1;--sl300:#E2E8F0;
+  --sl200:#F0F1F4;--sl100:#F3F4F8;--sl50:#FAFBFC;
+  --em600:#059669;--em500:#10B981;--em400:#34D399;
+  --emS:rgba(16,185,129,0.08);--emS2:rgba(16,185,129,0.14);
+  --amb:#D97706;--red:#DC2626;
+  --grnL:#ECFDF5;
+  --display:'Plus Jakarta Sans',sans-serif;
+  --body:'DM Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--sl950);background:var(--sl50);line-height:1.6}
+a{color:inherit;text-decoration:none}
+
+/* ── Nav (same as index) ───────────────── */
+.nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:14px 24px;border-bottom:1px solid var(--sl300);background:rgba(250,251,252,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav-logo{display:flex;align-items:center;gap:9px;cursor:pointer}
+.nav-logo-mark{width:30px;height:30px;border-radius:8px;background:var(--sl950);display:flex;align-items:center;justify-content:center}
+.nav-logo-text{font-family:var(--display);font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{font-size:14px;font-weight:600;color:var(--sl600);padding:8px 16px;border-radius:8px;cursor:pointer;border:none;background:none;transition:color 0.15s}
+.nav-link:hover{color:var(--sl950)}
+.nav-link.active{color:var(--em500)}
+.nav-cta{font-family:var(--display);font-size:13px;font-weight:700;color:#fff;background:var(--em500);border:none;padding:9px 20px;border-radius:8px;cursor:pointer;transition:background 0.15s}
+.nav-cta:hover{background:var(--em600)}
+.nav-sep{width:1px;height:22px;background:var(--sl300);margin:0 6px}
+
+/* ── Hero ──────────────────────────────── */
+.pricing-hero{text-align:center;padding:64px 24px 48px}
+.pricing-eyebrow{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--em500);margin-bottom:8px}
+.pricing-hero h1{font-family:var(--display);font-size:36px;font-weight:800;letter-spacing:-0.5px;margin-bottom:12px}
+.pricing-hero p{font-size:16px;color:var(--sl600);max-width:500px;margin:0 auto 32px;line-height:1.6}
+
+/* ── Toggle ────────────────────────────── */
+.toggle-wrap{display:inline-flex;background:var(--sl100);border-radius:10px;padding:3px}
+.toggle-btn{padding:8px 22px;border-radius:8px;border:none;font-family:var(--body);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--sl500)}
+.toggle-btn.active{background:#fff;color:var(--sl950);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.toggle-save{font-size:11px;color:var(--em600);font-weight:700;margin-left:4px}
+
+/* ── Tier cards ────────────────────────── */
+.tiers{max-width:980px;margin:0 auto;padding:0 24px 48px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+
+.tier{background:#fff;border:1px solid var(--sl300);border-radius:18px;padding:28px 24px;position:relative;transition:box-shadow 0.2s}
+.tier:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+.tier--highlight{border:2px solid var(--em500)}
+
+.tier-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--em500);color:#fff;font-family:var(--display);font-size:10px;font-weight:700;padding:4px 16px;border-radius:20px;white-space:nowrap;letter-spacing:0.3px}
+
+.tier-name{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:4px}
+.tier-desc{font-size:13px;color:var(--sl500);margin-bottom:18px}
+
+.tier-price{display:flex;align-items:baseline;gap:3px;margin-bottom:2px}
+.tier-price-num{font-family:var(--display);font-size:42px;font-weight:800;letter-spacing:-1px}
+.tier-price-period{font-size:14px;color:var(--sl500)}
+.tier-price-note{font-size:12px;color:var(--sl500);margin-bottom:20px;min-height:18px}
+
+.tier-cta{display:block;width:100%;padding:13px;border-radius:10px;font-family:var(--display);font-size:14px;font-weight:700;text-align:center;cursor:pointer;transition:all 0.15s;border:2px solid;margin-bottom:24px}
+.tier-cta--primary{background:var(--em500);color:#fff;border-color:var(--em500)}
+.tier-cta--primary:hover{background:var(--em600);border-color:var(--em600)}
+.tier-cta--outline{background:transparent;color:var(--em500);border-color:var(--em500)}
+.tier-cta--outline:hover{background:var(--emS)}
+
+/* Features list */
+.tier-features{display:flex;flex-direction:column}
+.tier-feat{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--sl200)}
+.tier-feat:last-child{border-bottom:none}
+.tier-feat-icon{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.tier-feat-icon--yes{background:var(--grnL);color:var(--em600)}
+.tier-feat-icon--no{background:var(--sl100);color:var(--sl400)}
+.tier-feat-text{font-size:13px;color:var(--sl600)}
+.tier-feat-text--bold{font-weight:700;color:var(--sl700)}
+.tier-feat-text--dim{opacity:0.5}
+
+/* ── PAYG card ─────────────────────────── */
+.payg-wrap{max-width:980px;margin:0 auto;padding:0 24px 48px}
+.payg{background:linear-gradient(135deg,var(--sl950),var(--sl900));border-radius:18px;padding:36px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:28px}
+.payg-info h3{font-family:var(--display);font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
+.payg-info .payg-eyebrow{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px}
+.payg-info p{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;max-width:440px}
+.payg-packs{display:flex;gap:12px;flex-wrap:wrap}
+.payg-pack{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:18px 22px;text-align:center;cursor:pointer;min-width:115px;transition:background 0.15s,border-color 0.15s}
+.payg-pack:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
+.payg-pack-label{font-size:12px;color:rgba(255,255,255,0.5);font-weight:600;margin-bottom:4px}
+.payg-pack-price{font-family:var(--display);font-size:24px;font-weight:800;color:#fff}
+.payg-pack-sub{font-size:11px;color:rgba(255,255,255,0.3);margin-top:3px}
+
+/* ── FAQ ───────────────────────────────── */
+.faq-section{max-width:660px;margin:0 auto;padding:48px 24px 60px}
+.faq-title{font-family:var(--display);font-size:24px;font-weight:800;text-align:center;margin-bottom:36px}
+.faq-item{padding:18px 0;border-bottom:1px solid var(--sl200)}
+.faq-item:last-child{border-bottom:none}
+.faq-q{font-size:15px;font-weight:700;color:var(--sl950);margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.faq-q::after{content:'+';font-size:20px;color:var(--sl400);font-weight:400;transition:transform 0.2s}
+.faq-item.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{font-size:14px;color:var(--sl600);line-height:1.65;max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.3s ease;padding-top:0}
+.faq-item.open .faq-a{max-height:200px;padding-top:6px}
+
+/* ── B2B callout ───────────────────────── */
+.b2b-wrap{max-width:660px;margin:0 auto;padding:0 24px 48px}
+.b2b{background:#fff;border:1px solid var(--sl300);border-radius:16px;padding:28px 24px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.b2b-icon{width:52px;height:52px;border-radius:14px;background:var(--emS2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.b2b-text{flex:1;min-width:220px}
+.b2b-text h4{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:4px}
+.b2b-text p{font-size:13px;color:var(--sl600);line-height:1.55}
+.b2b-btn{margin-top:12px;background:transparent;border:1px solid var(--sl300);padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;color:var(--em500);cursor:pointer;transition:background 0.15s}
+.b2b-btn:hover{background:var(--sl100)}
+
+/* ── CTA ───────────────────────────────── */
+.pricing-cta{background:var(--sl100);border-top:1px solid var(--sl200);padding:56px 24px;text-align:center}
+.pricing-cta h2{font-family:var(--display);font-size:24px;font-weight:800;margin-bottom:8px}
+.pricing-cta p{font-size:14px;color:var(--sl500);margin-bottom:24px}
+.pricing-cta-btn{font-family:var(--display);font-size:15px;font-weight:700;color:#fff;background:var(--em500);border:none;padding:14px 32px;border-radius:10px;cursor:pointer;transition:background 0.15s}
+.pricing-cta-btn:hover{background:var(--em600)}
+
+/* ── Footer ────────────────────────────── */
+.footer{border-top:1px solid var(--sl300);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--sl500)}
+.footer-links{display:flex;gap:20px}
+.footer-links a:hover{color:var(--sl700)}
+
+/* ── Auth modal (reused from index) ────── */
+#clerk-auth-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);justify-content:center;align-items:center}
+#clerk-auth-modal.open{display:flex}
+#clerk-auth-container{background:#fff;border-radius:20px;padding:12px;box-shadow:0 24px 64px rgba(0,0,0,0.25);min-width:400px;min-height:500px;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;border:1px solid var(--sl200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--sl500);z-index:10}
+.modal-close:hover{background:var(--sl100)}
+
+/* ── Responsive ────────────────────────── */
+@media(max-width:768px){
+  .tiers{grid-template-columns:1fr;max-width:420px}
+  .payg{flex-direction:column;align-items:flex-start}
+  .nav-link{display:none}
+  #clerk-auth-container{min-width:auto;margin:16px;width:calc(100% - 32px)}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" fill="#fff"/>
+        <path d="M9.59 3L7.17 5.5H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2v-11a2 2 0 00-2-2h-3.17L14.41 3H9.59z" stroke="#fff" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+        <path d="M12 17a5 5 0 100-10 5 5 0 000 10z" stroke="#fff" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">Listing Lens</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/#how-it-works">How It Works</a>
+    <a class="nav-link active" href="/pricing">Pricing</a>
+    <div class="nav-sep"></div>
+    <button class="nav-cta" onclick="openAuth()">Create Account</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="pricing-hero">
+  <div class="pricing-eyebrow">Pricing</div>
+  <h1>Simple pricing. No surprises.</h1>
+  <p>Create a free account. Get 2 reports for $1. Upgrade when you need more.</p>
+
+  <!-- Toggle -->
+  <div class="toggle-wrap">
+    <button class="toggle-btn" id="toggle-monthly" onclick="setBilling('monthly')">Monthly</button>
+    <button class="toggle-btn active" id="toggle-annual" onclick="setBilling('annual')">Annual <span class="toggle-save">Save 27%</span></button>
+  </div>
+</section>
+
+<!-- Tier Cards -->
+<div class="tiers" id="tiers">
+  <!-- Populated by JS -->
+</div>
+
+<!-- Pay As You Go -->
+<div class="payg-wrap">
+  <div class="payg">
+    <div class="payg-info">
+      <div class="payg-eyebrow">Pay As You Go</div>
+      <h3>Just need one report?</h3>
+      <p>No subscription required. Full report with all sections. Credit packs for better value.</p>
+    </div>
+    <div class="payg-packs">
+      <div class="payg-pack" onclick="selectPlan('pack_1')">
+        <div class="payg-pack-label">1 Report</div>
+        <div class="payg-pack-price">$4.99</div>
+        <div class="payg-pack-sub">Single use</div>
+      </div>
+      <div class="payg-pack" onclick="selectPlan('pack_5')">
+        <div class="payg-pack-label">5 Pack</div>
+        <div class="payg-pack-price">$19.99</div>
+        <div class="payg-pack-sub">$4.00 each</div>
+      </div>
+      <div class="payg-pack" onclick="selectPlan('pack_10')">
+        <div class="payg-pack-label">10 Pack</div>
+        <div class="payg-pack-price">$34.99</div>
+        <div class="payg-pack-sub">$3.50 each</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <h2 class="faq-title">Common questions</h2>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Why 2 reports for $1?</div>
+    <div class="faq-a">We want you to see the full product and come back for more. Your $1 gets you 2 complete analyst reports with no restrictions — score, all flags with reasoning, negotiation anchor, ownership costs, market comparisons, questions to ask, and pre-purchase checklist. Use one, and you've still got a credit in the bank for next time. At 50 cents a report, it's a no-brainer.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Does input quality affect the report?</div>
+    <div class="faq-a">Yes. URLs give the most data and produce the richest reports. Screenshots and pasted text are next best. A quick photo will still generate a useful report, but with fewer data points. We show a completeness indicator so you always know. Pro users can combine multiple inputs for deeper analysis.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">How accurate are the estimates?</div>
+    <div class="faq-a">Where data comes from verified sources (land registries, council records), we flag it as verified. Where the AI is estimating (insurance, renovation costs, depreciation), it's clearly marked. Reports are buyer intelligence, not formal valuations — always conduct your own due diligence.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">What categories do you support?</div>
+    <div class="faq-a">At launch: Property, Vehicles, Electronics, and General (furniture, fashion, collectibles, marketplace items). The AI adapts its scoring dimensions, flag types, and cost sections to each category automatically. More categories coming based on demand.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Can I cancel anytime?</div>
+    <div class="faq-a">Yes. Monthly plans cancel instantly. Annual plans can be cancelled and will run until the end of the billing period. Pay-as-you-go credit packs never expire. No lock-in contracts.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Do unused reports roll over?</div>
+    <div class="faq-a">No. Monthly report allowances reset each billing cycle. If you only need occasional reports, pay-as-you-go credit packs are better value and never expire.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Is my data shared?</div>
+    <div class="faq-a">No. Your reports are saved to your dashboard for your reference only. We don't sell data, share search history, or use your queries for advertising. Your report history is yours.</div>
+  </div>
+</section>
+
+<!-- B2B Callout -->
+<div class="b2b-wrap">
+  <div class="b2b">
+    <div class="b2b-icon">🏢</div>
+    <div class="b2b-text">
+      <h4>Use Listing Lens for your business?</h4>
+      <p>Real estate agents, car dealers, property managers, and buyer's advocates — offer Listing Lens reports to your clients. White-label PDFs on Pro+, or get in touch about API integration and volume pricing.</p>
+      <button class="b2b-btn" onclick="window.location.href='mailto:hello@listinglens.app?subject=B2B Enquiry'">Contact us about B2B →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="pricing-cta">
+  <h2>2 full reports for $1. No catch.</h2>
+  <p>Create a free account. Use your first credit. Come back and use the second. Upgrade when you need more.</p>
+  <button class="pricing-cta-btn" onclick="openAuth()">Create Free Account</button>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <span>© 2026 Listing Lens · Powered by <strong style="color:var(--sl700)">UPD8.GROUP</strong></span>
+  <div class="footer-links">
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+  </div>
+</footer>
+
+<!-- Auth Modal -->
+<div id="clerk-auth-modal">
+  <div id="clerk-auth-container">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <div id="clerk-mount"></div>
+  </div>
+</div>
+
+<script>
+// ── Tier data ─────────────────────────────
+const TIERS = [
+  {
+    name: "Starter",
+    desc: "2 full reports for $1.",
+    monthly: "$1", annual: "$1", period: "", periodAnnual: "",
+    note: "50\u00A2 per report", noteAnnual: "50\u00A2 per report",
+    product: "",
+    cta: "Get 2 Reports for $1", ctaStyle: "outline",
+    highlight: false,
+    features: [
+      { text: "2 full analyst reports for $1", ok: true, bold: true },
+      { text: "Account is free \u2014 pay when you\u2019re ready", ok: true, bold: true },
+      { text: "Score, all flags, full reasoning", ok: true },
+      { text: "Negotiation anchor & bid strategy", ok: true },
+      { text: "Ownership costs & true total", ok: true },
+      { text: "All 4 input methods", ok: true },
+      { text: "Reports saved to your dashboard", ok: true },
+      { text: "Subscription features (history, alerts)", ok: false },
+    ]
+  },
+  {
+    name: "Pro",
+    desc: "For active buyers and sellers",
+    monthly: "$9", annual: "$79", period: "/mo", periodAnnual: "/year",
+    note: "", noteAnnual: "~$6.58/mo billed annually",
+    badge: "Most Popular",
+    product: "pro",
+    cta: "Start Pro", ctaStyle: "primary",
+    highlight: true,
+    features: [
+      { text: "10 full reports per month", ok: true },
+      { text: "Complete analyst report every time", ok: true },
+      { text: "Multi-input (photo + paste combined)", ok: true },
+      { text: "Side-by-side comparison (2 reports)", ok: true },
+      { text: "Negotiation anchor & ownership costs", ok: true },
+      { text: "PDF export & full report history", ok: true },
+      { text: "Price alerts on saved listings", ok: true },
+    ]
+  },
+  {
+    name: "Pro+",
+    desc: "Investors & professionals",
+    monthly: "$19", annual: "$159", period: "/mo", periodAnnual: "/year",
+    note: "", noteAnnual: "~$13.25/mo billed annually",
+    product: "pro_plus",
+    cta: "Start Pro+", ctaStyle: "outline",
+    highlight: false,
+    features: [
+      { text: "30 full reports per month", ok: true },
+      { text: "Everything in Pro", ok: true },
+      { text: "Compare up to 5 reports side-by-side", ok: true },
+      { text: "Bulk URL paste (5 at once)", ok: true },
+      { text: "White-label PDF (your logo)", ok: true },
+      { text: "Priority processing", ok: true },
+      { text: "API access & CSV data export", ok: true },
+    ]
+  }
+];
+
+let billing = "annual";
+
+function setBilling(mode) {
+  billing = mode;
+  document.getElementById("toggle-monthly").classList.toggle("active", mode === "monthly");
+  document.getElementById("toggle-annual").classList.toggle("active", mode === "annual");
+  renderTiers();
+}
+
+function renderTiers() {
+  const container = document.getElementById("tiers");
+  container.innerHTML = TIERS.map(t => {
+    const price = billing === "annual" ? t.annual : t.monthly;
+    const period = billing === "annual" ? t.periodAnnual : t.period;
+    const note = billing === "annual" ? t.noteAnnual : t.note;
+    const ctaClass = t.ctaStyle === "primary" ? "tier-cta--primary" : "tier-cta--outline";
+    const tierClass = t.highlight ? "tier tier--highlight" : "tier";
+
+    return `
+      <div class="${tierClass}">
+        ${t.badge ? `<div class="tier-badge">${t.badge}</div>` : ""}
+        <div class="tier-name">${t.name}</div>
+        <div class="tier-desc">${t.desc}</div>
+        <div class="tier-price">
+          <span class="tier-price-num">${price}</span>
+          ${period ? `<span class="tier-price-period">${period}</span>` : ""}
+        </div>
+        <div class="tier-price-note">${note || ""}</div>
+        <button class="tier-cta ${ctaClass}" onclick="selectPlan('${t.product || ''}')">${t.cta}</button>
+        <div class="tier-features">
+          ${t.features.map(f => `
+            <div class="tier-feat">
+              <div class="tier-feat-icon ${f.ok ? 'tier-feat-icon--yes' : 'tier-feat-icon--no'}">${f.ok ? '✓' : '—'}</div>
+              <span class="tier-feat-text ${f.bold ? 'tier-feat-text--bold' : ''} ${!f.ok ? 'tier-feat-text--dim' : ''}">${f.text}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// Initial render
+renderTiers();
+
+// ── FAQ toggle ────────────────────────────
+function toggleFaq(el) {
+  el.parentElement.classList.toggle("open");
+}
+
+// ── Plan selection (stores choice for post-auth checkout) ─────
+function selectPlan(product) {
+  if (product) {
+    // Append billing cycle for subscriptions
+    var fullProduct = product;
+    if (product === "pro" || product === "pro_plus") {
+      fullProduct = product + "_" + billing; // e.g. "pro_annual" or "pro_plus_monthly"
+    }
+    try { sessionStorage.setItem("ll_pending_plan", fullProduct); } catch(e) {}
+  }
+  openAuth();
+}
+
+// ── Auth modal ────────────────────────────
+let clerkMounted = false;
+
+function openAuth() {
+  document.getElementById("clerk-auth-modal").classList.add("open");
+  document.body.style.overflow = "hidden";
+  mountClerk();
+}
+
+function closeAuth() {
+  document.getElementById("clerk-auth-modal").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.getElementById("clerk-auth-modal").addEventListener("click", function(e) {
+  if (e.target === this) closeAuth();
+});
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") closeAuth();
+});
+
+async function mountClerk() {
+  if (clerkMounted) return;
+  try {
+    if (!window.Clerk) {
+      await new Promise((res) => {
+        const c = setInterval(() => { if (window.Clerk) { clearInterval(c); res(); } }, 100);
+        setTimeout(() => { clearInterval(c); res(); }, 5000);
+      });
+    }
+    if (window.Clerk) {
+      await window.Clerk.load();
+      if (window.Clerk.user) { window.location.href = "/dashboard"; return; }
+      window.Clerk.mountSignUp(document.getElementById("clerk-mount"), {
+        afterSignUpUrl: "/dashboard",
+        afterSignInUrl: "/dashboard",
+        appearance: {
+          variables: { colorPrimary: "#10B981", borderRadius: "10px", fontFamily: "'DM Sans', sans-serif" },
+          elements: {
+            card: { boxShadow: "none", border: "none" },
+            headerTitle: { fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 },
+            socialButtonsBlockButton: { borderRadius: "10px", fontWeight: 600 },
+            formButtonPrimary: { borderRadius: "10px", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" },
+          }
+        }
+      });
+      clerkMounted = true;
+    } else {
+      document.getElementById("clerk-mount").innerHTML = `
+        <div style="padding:40px;text-align:center">
+          <p style="font-size:18px;font-weight:700;margin-bottom:8px">Create your account</p>
+          <p style="font-size:14px;color:#94A3B8;margin-bottom:24px">Auth is loading. If this persists, refresh.</p>
+          <button onclick="location.reload()" style="font-size:14px;font-weight:700;background:#10B981;color:#fff;border:none;padding:12px 24px;border-radius:10px;cursor:pointer">Refresh</button>
+        </div>`;
+    }
+  } catch (err) {
+    console.error("Clerk error:", err);
+  }
+}
+</script>
+</body>
+</html>

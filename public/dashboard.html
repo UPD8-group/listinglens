@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Dashboard — Listing Lens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_REPLACE_ME" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+<style>
+:root{
+  --sl950:#0F172A;--sl900:#1E293B;--sl800:#334155;--sl700:#475569;
+  --sl600:#64748B;--sl500:#94A3B8;--sl400:#CBD5E1;--sl300:#E2E8F0;
+  --sl200:#F0F1F4;--sl100:#F3F4F8;--sl50:#FAFBFC;
+  --em600:#059669;--em500:#10B981;--em400:#34D399;
+  --emS:rgba(16,185,129,0.08);--emS2:rgba(16,185,129,0.14);
+  --amb:#D97706;--red:#DC2626;
+  --display:'Plus Jakarta Sans',sans-serif;
+  --body:'DM Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--body);color:var(--sl950);background:var(--sl100);line-height:1.6;display:flex;min-height:100vh}
+
+#loading{position:fixed;inset:0;background:var(--sl50);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.3s}
+#loading.hidden{opacity:0;pointer-events:none}
+.spinner{width:32px;height:32px;border:3px solid var(--sl200);border-top-color:var(--em500);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.sidebar{width:260px;background:#fff;border-right:1px solid var(--sl300);padding:20px 0;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;bottom:0;left:0;z-index:50}
+.sb-logo{display:flex;align-items:center;gap:9px;padding:0 20px;margin-bottom:32px;text-decoration:none;color:inherit}
+.sb-logo-mark{width:28px;height:28px;border-radius:7px;background:var(--sl950);display:flex;align-items:center;justify-content:center}
+.sb-logo-text{font-family:var(--display);font-size:17px;font-weight:800;letter-spacing:-0.5px}
+.sb-nav{flex:1}
+.sb-item{display:flex;align-items:center;gap:12px;padding:10px 20px;margin:2px 12px;border-radius:10px;font-size:14px;font-weight:500;color:var(--sl600);cursor:pointer;transition:background 0.15s,color 0.15s}
+.sb-item:hover{background:var(--sl100);color:var(--sl950)}
+.sb-item.active{background:var(--emS);color:var(--em500);font-weight:600}
+.sb-user{padding:16px 20px;border-top:1px solid var(--sl200)}
+.sb-user-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--sl950);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;overflow:hidden}
+.sb-avatar img{width:100%;height:100%;object-fit:cover}
+.sb-name{font-size:14px;font-weight:600}
+.sb-plan{font-size:12px;color:var(--em500);font-weight:600}
+.sb-signout{width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid var(--sl200);font-family:var(--body);font-size:13px;color:var(--sl600);cursor:pointer}
+.sb-signout:hover{background:var(--sl100)}
+
+.main{flex:1;margin-left:260px;overflow:auto}
+.topbar{padding:16px 32px;border-bottom:1px solid var(--sl300);background:#fff;display:flex;justify-content:space-between;align-items:center}
+.topbar h1{font-family:var(--display);font-size:22px;font-weight:800}
+.topbar-btn{padding:8px 14px;border-radius:8px;border:1px solid var(--sl300);background:#fff;font-family:var(--body);font-size:13px;color:var(--sl600);cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-left:8px}
+.topbar-btn:hover{background:var(--sl100)}
+.content{padding:28px 32px;max-width:1000px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat{background:#fff;border:1px solid var(--sl300);border-radius:14px;padding:20px 22px}
+.stat-label{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--sl500);margin-bottom:6px}
+.stat-val{font-family:var(--display);font-size:32px;font-weight:800;line-height:1}
+.stat-sub{font-size:12px;color:var(--sl500);margin-top:4px}
+.stat-bar{height:4px;background:var(--sl200);border-radius:2px;margin-top:10px;overflow:hidden}
+.stat-bar-fill{height:100%;background:var(--em500);border-radius:2px;transition:width 0.8s ease}
+
+.stat-credits{background:linear-gradient(135deg,var(--sl950),var(--sl900));border:none}
+.stat-credits .stat-label{color:rgba(255,255,255,0.5)}
+.stat-credits .stat-val{color:var(--em400)}
+.stat-credits .stat-sub{color:rgba(255,255,255,0.4)}
+
+.buy-btn{font-family:var(--display);font-size:12px;font-weight:700;color:#fff;background:var(--em500);border:none;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:10px;display:inline-block}
+.buy-btn:hover{background:var(--em600)}
+
+/* New Report */
+.nr{background:#fff;border:1px solid var(--sl300);border-radius:16px;padding:24px;margin-bottom:28px}
+.nr-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.nr-title{font-family:var(--display);font-size:16px;font-weight:700}
+.nr-credit-badge{font-family:var(--mono);font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;display:inline-flex;align-items:center;gap:6px}
+.nr-credit-badge--has{background:var(--emS2);color:var(--em500)}
+.nr-credit-badge--empty{background:#fef2f2;color:var(--red)}
+.nr-tabs{display:flex;gap:4px}
+.nr-tab{font-family:var(--body);font-size:12px;font-weight:600;padding:5px 12px;border-radius:7px;border:none;background:transparent;color:var(--sl500);cursor:pointer}
+.nr-tab:hover{color:var(--sl950)}
+.nr-tab.active{background:var(--emS2);color:var(--em500)}
+.nr-area{background:var(--sl100);border:1px solid var(--sl200);border-radius:12px;padding:18px}
+.nr-row{display:flex;gap:10px}
+.nr-input{flex:1;padding:13px 18px;background:#fff;border:1px solid var(--sl300);border-radius:10px;font-family:var(--body);font-size:14px;color:var(--sl950);outline:none}
+.nr-input:focus{border-color:var(--em500)}
+.nr-input::placeholder{color:var(--sl400)}
+.nr-btn{font-family:var(--display);font-size:14px;font-weight:700;color:#fff;background:var(--em500);border:none;padding:13px 24px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.nr-btn:hover{background:var(--em600)}
+.nr-btn:disabled{background:var(--sl400);cursor:not-allowed}
+.nr-drop{border:2px dashed var(--sl300);border-radius:10px;padding:28px 20px;text-align:center;background:#fff;cursor:pointer}
+.nr-drop:hover{border-color:var(--em500)}
+.nr-textarea{width:100%;padding:13px 18px;background:#fff;border:1px solid var(--sl300);border-radius:10px;font-family:var(--body);font-size:14px;color:var(--sl950);outline:none;resize:vertical;min-height:80px;margin-bottom:10px}
+.nr-textarea:focus{border-color:var(--em500)}
+.nr-textarea::placeholder{color:var(--sl400)}
+
+/* No credits prompt */
+.no-credits{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:20px;text-align:center;margin-top:12px;display:none}
+.no-credits-title{font-family:var(--display);font-size:15px;font-weight:700;color:var(--sl950);margin-bottom:4px}
+.no-credits-desc{font-size:13px;color:var(--sl600);margin-bottom:14px}
+.no-credits .buy-btn{font-size:14px;padding:10px 24px}
+
+/* Generating overlay */
+.generating{display:none;background:var(--sl100);border:1px solid var(--sl200);border-radius:12px;padding:32px;text-align:center;margin-top:12px}
+.generating.show{display:block}
+.generating .spinner{margin:0 auto 12px}
+.generating-text{font-family:var(--mono);font-size:12px;color:var(--sl500);letter-spacing:0.05em}
+
+/* Reports */
+.reps-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.reps-title{font-family:var(--display);font-size:16px;font-weight:700}
+.reps-link{font-size:13px;font-weight:600;color:var(--em500);cursor:pointer}
+.rep-row{background:#fff;border:1px solid var(--sl300);border-radius:14px;padding:18px 22px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;transition:border-color 0.15s;flex-wrap:wrap}
+.rep-row:hover{border-color:var(--sl400);box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.rep-info{flex:1;min-width:220px}
+.rep-title{font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3}
+.rep-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rep-cat{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.rep-badge{font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--emS2);color:var(--em500)}
+.rep-date{font-size:12px;color:var(--sl500)}
+.rep-right{text-align:right;flex-shrink:0}
+.rep-est{font-family:var(--display);font-size:18px;font-weight:700}
+.rep-verdict{font-size:12px;font-weight:600}
+
+.empty{text-align:center;padding:48px 24px;background:#fff;border:1px solid var(--sl300);border-radius:14px}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:4px}
+.empty-desc{font-size:14px;color:var(--sl500);margin-bottom:20px}
+.empty-btn{font-family:var(--display);font-size:14px;font-weight:700;color:#fff;background:var(--em500);border:none;padding:12px 28px;border-radius:10px;cursor:pointer}
+
+.mobile-menu{display:none;padding:8px;border:1px solid var(--sl300);border-radius:8px;background:#fff;cursor:pointer;font-size:18px}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform 0.25s;position:fixed}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .mobile-menu{display:block}
+  .stats{grid-template-columns:1fr 1fr}
+  .content{padding:20px 16px}
+  .topbar{padding:14px 16px}
+}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div></div>
+
+<aside class="sidebar" id="sidebar">
+  <a class="sb-logo" href="/">
+    <div class="sb-logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" fill="#fff"/><path d="M9.59 3L7.17 5.5H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2v-11a2 2 0 00-2-2h-3.17L14.41 3H9.59z" stroke="#fff" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M12 17a5 5 0 100-10 5 5 0 000 10z" stroke="#fff" stroke-width="1.5" fill="none"/></svg></div>
+    <span class="sb-logo-text">Listing Lens</span>
+  </a>
+  <nav class="sb-nav">
+    <div class="sb-item active">&#x1F4CA; Dashboard</div>
+    <div class="sb-item">&#x1F4C1; My Reports</div>
+    <div class="sb-item">&#x2696;&#xFE0F; Compare</div>
+    <div class="sb-item">&#x2B50; Saved</div>
+    <div class="sb-item">&#x1F514; Alerts</div>
+  </nav>
+  <div class="sb-user">
+    <div class="sb-user-row">
+      <div class="sb-avatar" id="user-avatar">?</div>
+      <div><div class="sb-name" id="user-name">Loading...</div><div class="sb-plan" id="user-plan">&mdash;</div></div>
+    </div>
+    <button class="sb-signout" id="signout-btn">Sign out</button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="mobile-menu" onclick="document.getElementById('sidebar').classList.toggle('open')">&#9776;</button>
+      <h1>Dashboard</h1>
+    </div>
+    <div>
+      <button class="topbar-btn" onclick="buyCredits('single_report')">&#x1F4B3; Buy Credits</button>
+      <button class="topbar-btn">&#x2699;&#xFE0F; Settings</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat stat-credits">
+        <div class="stat-label">Credits Available</div>
+        <div class="stat-val" id="s-credits">0</div>
+        <div class="stat-sub" id="s-credits-sub">Get 2 reports for $1</div>
+        <button class="buy-btn" id="buy-btn" onclick="buyCredits('first_report')">Get Started &mdash; 2 for $1</button>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Reports This Month</div>
+        <div class="stat-val" id="s-count">0</div>
+        <div class="stat-sub" id="s-count-sub">&mdash;</div>
+        <div class="stat-bar"><div class="stat-bar-fill" id="s-bar" style="width:0%"></div></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Red Flags Found</div>
+        <div class="stat-val" style="color:var(--red)" id="s-flags">0</div>
+        <div class="stat-sub">across all reports</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Savings Identified</div>
+        <div class="stat-val" style="color:var(--em600)" id="s-savings">$0</div>
+        <div class="stat-sub">overpriced listings avoided</div>
+      </div>
+    </div>
+
+    <!-- New Report -->
+    <div class="nr">
+      <div class="nr-header">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div class="nr-title">New Report</div>
+          <div class="nr-credit-badge" id="nr-badge"></div>
+        </div>
+        <div class="nr-tabs">
+          <button class="nr-tab active" onclick="showTab('url',this)">&#x1F517; URL</button>
+          <button class="nr-tab" onclick="showTab('screenshot',this)">&#x1F4F8; Screenshot</button>
+          <button class="nr-tab" onclick="showTab('paste',this)">&#x1F4CB; Paste</button>
+          <button class="nr-tab" onclick="showTab('photo',this)">&#x1F4F7; Photo</button>
+        </div>
+      </div>
+      <div class="nr-area">
+        <div id="tab-url">
+          <div class="nr-row">
+            <input class="nr-input" type="url" placeholder="Paste any listing URL..." id="url-input">
+            <button class="nr-btn" id="analyse-btn" onclick="doAnalyse()">Analyse</button>
+          </div>
+        </div>
+        <div id="tab-screenshot" style="display:none">
+          <div class="nr-drop" onclick="document.getElementById('ss-file').click()">
+            <div style="font-size:28px;margin-bottom:6px">&#x1F4F8;</div>
+            <div style="font-size:14px;font-weight:600">Drop a screenshot here</div>
+            <div style="font-size:12px;color:var(--sl500)">or click to browse &mdash; PNG, JPG, WebP</div>
+          </div>
+          <input type="file" id="ss-file" accept="image/*" style="display:none">
+        </div>
+        <div id="tab-paste" style="display:none">
+          <textarea class="nr-textarea" placeholder="Paste the listing title, description, price, specs..." id="paste-input"></textarea>
+          <div style="text-align:right"><button class="nr-btn" onclick="doAnalysePaste()">Analyse Text</button></div>
+        </div>
+        <div id="tab-photo" style="display:none">
+          <div class="nr-drop" onclick="document.getElementById('ph-file').click()">
+            <div style="font-size:28px;margin-bottom:6px">&#x1F4F7;</div>
+            <div style="font-size:14px;font-weight:600">Take a photo of the product</div>
+            <div style="font-size:12px;color:var(--sl500)">Window sticker, price tag, or the product itself</div>
+          </div>
+          <input type="file" id="ph-file" accept="image/*" capture="environment" style="display:none">
+        </div>
+      </div>
+
+      <!-- No credits prompt (hidden by default) -->
+      <div class="no-credits" id="no-credits">
+        <div class="no-credits-title" id="no-credits-title">You need credits to run a report</div>
+        <div class="no-credits-desc">Your listing data is saved &mdash; buy credits and click Analyse again.</div>
+        <button class="buy-btn" onclick="buyCredits('first_report')" id="no-credits-btn">Get Started &mdash; 2 for $1</button>
+      </div>
+
+      <!-- Generating state -->
+      <div class="generating" id="generating">
+        <div class="spinner"></div>
+        <div class="generating-text" id="generating-text">Generating your report...</div>
+      </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="reps-header"><div class="reps-title">Recent Reports</div><span class="reps-link">View all &#8594;</span></div>
+    <div id="reps-list"></div>
+    <div id="empty-state" style="display:none">
+      <div class="empty">
+        <div class="empty-icon">&#x1F50D;</div>
+        <div class="empty-title">No reports yet</div>
+        <div class="empty-desc">Buy a credit, paste a URL, and generate your first buyer intelligence report.</div>
+        <button class="empty-btn" onclick="buyCredits('first_report')">Get Started &mdash; 2 Reports for $1</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentUserId = null;
+var userCredits = 0;
+var userPlan = "free";
+
+// ── Tab switching ──────────────────────────
+function showTab(id, btn) {
+  var tabs = ["url", "screenshot", "paste", "photo"];
+  for (var i = 0; i < tabs.length; i++) {
+    document.getElementById("tab-" + tabs[i]).style.display = "none";
+  }
+  document.getElementById("tab-" + id).style.display = "block";
+  var buttons = document.querySelectorAll(".nr-tab");
+  for (var j = 0; j < buttons.length; j++) buttons[j].classList.remove("active");
+  btn.classList.add("active");
+}
+
+// ── Update credit badge ────────────────────
+function updateCreditBadge() {
+  var badge = document.getElementById("nr-badge");
+  if (userCredits > 0 || userPlan === "pro" || userPlan === "pro_plus") {
+    var label = userCredits > 0 ? userCredits + " credit" + (userCredits !== 1 ? "s" : "") : "Subscription active";
+    badge.className = "nr-credit-badge nr-credit-badge--has";
+    badge.textContent = label;
+  } else {
+    badge.className = "nr-credit-badge nr-credit-badge--empty";
+    badge.textContent = "No credits";
+  }
+}
+
+// ── Buy credits via Stripe ─────────────────
+function buyCredits(product) {
+  if (!currentUserId) return;
+
+  // Determine the right product
+  if (!product) product = "single_report";
+
+  fetch("/.netlify/functions/create-checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ product: product, userId: currentUserId }),
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.url) {
+      window.location.href = data.url;
+    } else if (data.skipPayment) {
+      // User already has credits (subscription) — just refresh
+      location.reload();
+    }
+  })
+  .catch(function(err) {
+    console.error("Buy credits error:", err);
+    alert("Something went wrong. Please try again.");
+  });
+}
+
+// ── Analyse (credits-first) ────────────────
+function doAnalyse() {
+  var input = document.getElementById("url-input");
+  if (!input || !input.value.trim()) { if (input) input.focus(); return; }
+
+  var hasCredits = userCredits > 0 || userPlan === "pro" || userPlan === "pro_plus";
+  if (!hasCredits) {
+    showNoCredits();
+    return;
+  }
+
+  generateReport("url", input.value.trim(), null);
+}
+
+function doAnalysePaste() {
+  var input = document.getElementById("paste-input");
+  if (!input || !input.value.trim()) { if (input) input.focus(); return; }
+
+  var hasCredits = userCredits > 0 || userPlan === "pro" || userPlan === "pro_plus";
+  if (!hasCredits) {
+    showNoCredits();
+    return;
+  }
+
+  generateReport("text", null, input.value.trim());
+}
+
+function showNoCredits() {
+  var el = document.getElementById("no-credits");
+  el.style.display = "block";
+  // Scroll into view
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// ── Generate report (inline, no redirect) ──
+function generateReport(inputType, url, text) {
+  var gen = document.getElementById("generating");
+  var noC = document.getElementById("no-credits");
+  noC.style.display = "none";
+  gen.className = "generating show";
+
+  var steps = [
+    "Fetching listing data...",
+    "Analysing price and market...",
+    "Checking for red flags...",
+    "Building negotiation strategy...",
+    "Generating your report..."
+  ];
+  var si = 0;
+  var stepTimer = setInterval(function() {
+    si = (si + 1) % steps.length;
+    document.getElementById("generating-text").textContent = steps[si];
+  }, 2500);
+
+  fetch("/.netlify/functions/generate-report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url: url,
+      text: text,
+      inputType: inputType,
+      userId: currentUserId,
+    }),
+  })
+  .then(function(res) {
+    if (!res.ok) {
+      return res.json().then(function(err) { throw new Error(err.error || "Generation failed"); });
+    }
+    return res.json();
+  })
+  .then(function(data) {
+    clearInterval(stepTimer);
+    if (data.report && data.report.reportNum) {
+      // Success — redirect to report view
+      window.location.href = "/report?id=" + encodeURIComponent(data.report.reportNum);
+    } else {
+      gen.className = "generating";
+      alert("Report generation failed. Please try again.");
+    }
+  })
+  .catch(function(err) {
+    clearInterval(stepTimer);
+    gen.className = "generating";
+    if (err.message && err.message.indexOf("credit") !== -1) {
+      showNoCredits();
+    } else {
+      alert("Error: " + err.message);
+    }
+  });
+}
+
+// Enter key
+document.getElementById("url-input").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") doAnalyse();
+});
+
+// Sidebar nav
+var navItems = document.querySelectorAll(".sb-item");
+for (var i = 0; i < navItems.length; i++) {
+  navItems[i].addEventListener("click", function() {
+    for (var j = 0; j < navItems.length; j++) navItems[j].classList.remove("active");
+    this.classList.add("active");
+    document.getElementById("sidebar").classList.remove("open");
+  });
+}
+
+// ── Render reports ─────────────────────────
+function renderReports(reports) {
+  var list = document.getElementById("reps-list");
+  var empty = document.getElementById("empty-state");
+  if (!reports || reports.length === 0) { list.innerHTML = ""; empty.style.display = "block"; return; }
+  empty.style.display = "none";
+  var catColors = { property: "#059669", vehicle: "#3B82F6", electronics: "#64748B", general: "#8B5CF6" };
+  var html = "";
+  for (var i = 0; i < reports.length; i++) {
+    var r = reports[i];
+    var cc = catColors[r.category] || "#64748B";
+    var catLabel = r.category ? r.category.charAt(0).toUpperCase() + r.category.slice(1) : "General";
+    var dateStr = new Date(r.created_at).toLocaleDateString("en-AU", {day:"numeric",month:"short",year:"numeric"});
+    var intlBadge = r.is_international ? '<span class="rep-badge">&#127759; International</span>' : "";
+    html += '<div class="rep-row" onclick="location.href=\'/report?id=' + encodeURIComponent(r.id) + '\'">';
+    html += '<div class="rep-info"><div class="rep-title">' + esc(r.title) + '</div><div class="rep-meta">';
+    html += '<span class="rep-cat" style="color:' + cc + ';background:' + cc + '12">' + esc(catLabel) + '</span>';
+    html += intlBadge + '<span class="rep-date">' + dateStr + '</span></div></div>';
+    html += '<div class="rep-right"><div class="rep-est">' + esc(r.estimated_price || "") + '</div>';
+    html += '<div class="rep-verdict" style="color:' + (r.verdict_color || "var(--em500)") + '">' + esc(r.verdict || "") + '</div></div>';
+    html += '<div style="color:var(--sl400);font-size:20px">&#8250;</div></div>';
+  }
+  list.innerHTML = html;
+}
+
+function esc(str) { if (!str) return ""; var d = document.createElement("div"); d.textContent = str; return d.innerHTML; }
+
+// ── Load dashboard data ────────────────────
+async function loadDashboard(userId) {
+  try {
+    var res = await fetch("/.netlify/functions/get-dashboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: userId }),
+    });
+    if (!res.ok) { renderReports([]); return; }
+    var data = await res.json();
+    var user = data.user || {};
+    userPlan = user.plan || "free";
+    userCredits = user.credits || 0;
+
+    // If on a subscription, calculate effective credits
+    var used = data.usage || 0;
+    var limit = userPlan === "pro" ? 10 : userPlan === "pro_plus" ? 30 : 0;
+    var subCredits = Math.max(0, limit - used);
+    var totalCredits = subCredits + userCredits;
+
+    // Update stats
+    document.getElementById("s-credits").textContent = totalCredits;
+    if (totalCredits > 0) {
+      var parts = [];
+      if (subCredits > 0) parts.push(subCredits + " from plan");
+      if (userCredits > 0) parts.push(userCredits + " purchased");
+      document.getElementById("s-credits-sub").textContent = parts.join(" + ");
+    } else {
+      document.getElementById("s-credits-sub").textContent = "Get 2 reports for $1";
+    }
+
+    // Update buy button text
+    var buyBtn = document.getElementById("buy-btn");
+    if (user.first_report_used) {
+      buyBtn.textContent = "Buy More Credits";
+      buyBtn.onclick = function() { buyCredits("single_report"); };
+    }
+
+    // No credits prompt text
+    if (user.first_report_used) {
+      document.getElementById("no-credits-title").textContent = "You need credits to run a report";
+      document.getElementById("no-credits-btn").textContent = "Buy 1 Credit \u2014 $4.99";
+      document.getElementById("no-credits-btn").onclick = function() { buyCredits("single_report"); };
+    } else {
+      document.getElementById("no-credits-title").textContent = "Get started with 2 reports for $1";
+      document.getElementById("no-credits-btn").textContent = "Get Started \u2014 2 for $1";
+    }
+
+    document.getElementById("s-count").textContent = used;
+    document.getElementById("s-count-sub").textContent = limit > 0 ? "of " + limit + " (" + (userPlan === "pro_plus" ? "Pro+" : "Pro") + ")" : "total reports generated";
+    document.getElementById("s-bar").style.width = limit > 0 ? Math.min((used / limit) * 100, 100) + "%" : "0%";
+    document.getElementById("s-flags").textContent = data.redFlags || 0;
+
+    // Sidebar plan label
+    if (userPlan === "pro") document.getElementById("user-plan").textContent = "Pro plan";
+    else if (userPlan === "pro_plus") document.getElementById("user-plan").textContent = "Pro+ plan";
+    else if (userCredits > 0) document.getElementById("user-plan").textContent = userCredits + " credits";
+    else document.getElementById("user-plan").textContent = "2 reports for $1";
+
+    // Set effective credits for badge and button state
+    userCredits = totalCredits;
+    updateCreditBadge();
+
+    renderReports(data.reports || []);
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    renderReports([]);
+  }
+}
+
+// ── Clerk init ─────────────────────────────
+async function init() {
+  try {
+    if (!window.Clerk) {
+      await new Promise(function(resolve, reject) {
+        var check = setInterval(function() { if (window.Clerk) { clearInterval(check); resolve(); } }, 100);
+        setTimeout(function() { clearInterval(check); reject(new Error("timeout")); }, 8000);
+      });
+    }
+    await window.Clerk.load();
+    if (!window.Clerk.user) { window.location.href = "/"; return; }
+
+    var user = window.Clerk.user;
+    currentUserId = user.id;
+    var firstName = user.firstName || user.username || "User";
+    document.getElementById("user-name").textContent = firstName;
+
+    var avatarEl = document.getElementById("user-avatar");
+    if (user.imageUrl) {
+      var img = document.createElement("img");
+      img.src = user.imageUrl;
+      img.alt = firstName;
+      avatarEl.innerHTML = "";
+      avatarEl.appendChild(img);
+    } else {
+      avatarEl.textContent = firstName.charAt(0).toUpperCase();
+    }
+
+    document.getElementById("signout-btn").addEventListener("click", async function() {
+      await window.Clerk.signOut();
+      window.location.href = "/";
+    });
+
+    // Load dashboard data
+    await loadDashboard(user.id);
+
+    // Check for pending plan from pricing page
+    try {
+      var pendingPlan = sessionStorage.getItem("ll_pending_plan");
+      if (pendingPlan) {
+        sessionStorage.removeItem("ll_pending_plan");
+        buyCredits(pendingPlan);
+        return;
+      }
+    } catch (e) {}
+
+    document.getElementById("loading").classList.add("hidden");
+
+  } catch (err) {
+    console.error("Auth error:", err);
+    window.location.href = "/";
+  }
+}
+
+init();
+</script>
+</body>
+</html>
